@@ -1,0 +1,163 @@
+{
+    "dataRoles": [
+        {
+            "displayName": "Day of Week",
+            "name": "dayOfWeek",
+            "kind": "Grouping"
+        },
+        {
+            "displayName": "Hour of Day",
+            "name": "hourOfDay",
+            "kind": "Grouping"
+        },
+        {
+            "displayName": "Values",
+            "name": "values",
+            "kind": "Measure"
+        }
+    ],
+    "dataViewMappings": [
+        {
+            "conditions": [
+                {
+                    "dayOfWeek": {
+                        "min": 1,
+                        "max": 1
+                    }
+                },
+                {
+                    "hourOfDay": {
+                        "min": 1,
+                        "max": 1
+                    }
+                },
+                {
+                    "values": {
+                        "min": 1,
+                        "max": 1
+                    }
+                }
+            ],
+            "categorical": {
+                "categories": {
+                    "select": [
+                        {
+                            "bind": {
+                                "to": "dayOfWeek"
+                            }
+                        },
+                        {
+                            "bind": {
+                                "to": "hourOfDay"
+                            }
+                        }
+                    ]
+                },
+                "values": {
+                    "select": [
+                        {
+                            "bind": {
+                                "to": "values"
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "objects": {
+        "formatting": {
+            "displayName": "Formatting",
+            "properties": {
+                "fontSize": {
+                    "displayName": "Font size",
+                    "type": {
+                        "formatting": {
+                            "fontSize": true
+                        }
+                    }
+                },
+                "bankHoliday": {
+                    "displayName": "Bank Holiday",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "tileShape": {
+                    "displayName": "Tile Shape",
+                    "type": {
+                        "enumeration": [
+                            {"value": "square" , "displayName": "Square"},
+                            {"value": "rounded1" , "displayName": "Rounded 1"},
+                            {"value": "rounded2" , "displayName": "Rounded 2"},
+                            {"value": "round" , "displayName": "Round"}
+                        ]
+                    }
+                },
+                "colorScheme": {
+                    "displayName": "Colors",
+                    "type": {
+                        "enumeration": [
+                            {"value": "YlGn" , "displayName": "YlGn"},
+                            {"value": "YlGnBu" , "displayName": "YlGnBu"},
+                            {"value": "GnBu" , "displayName": "GnBu"},
+                            {"value": "BuGn" , "displayName": "BuGn"},
+                            {"value": "PuBuGn" , "displayName": "PuBuGn"},
+                            {"value": "PuBu" , "displayName": "PuBu"},
+                            {"value": "BuPu" , "displayName": "BuPu"},
+                            {"value": "RdPu" , "displayName": "RdPu"},
+                            {"value": "PuRd" , "displayName": "PuRd"},
+                            {"value": "OrRd" , "displayName": "OrRd"},
+                            {"value": "YlOrRd" , "displayName": "YlOrRd"},
+                            {"value": "YlOrBr" , "displayName": "YlOrBr"},
+                            {"value": "Purples" , "displayName": "Purples"},
+                            {"value": "Blues" , "displayName": "Blues"},
+                            {"value": "Greens" , "displayName": "Greens"},
+                            {"value": "Oranges" , "displayName": "Oranges"},
+                            {"value": "Reds" , "displayName": "Reds"},
+                            {"value": "Greys" , "displayName": "Greys"},
+                            {"value": "Custom2" , "displayName": "Custom2"},
+                            {"value": "Custom3" , "displayName": "Custom3"}
+                        ]
+                    }
+                },
+                "lowestColour": {
+                    "displayName": "Lowest Colour",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "midColour": {
+                    "displayName": "Middle Colour",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "highestColour": {
+                    "displayName": "Highest Colour",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "unitsLabel": {
+                    "displayName": "Units Label",
+                    "type": {
+                        "text": true
+                    }
+                }
+            }
+        }
+    }
+}
