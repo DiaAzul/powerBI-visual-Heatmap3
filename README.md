@@ -5,6 +5,7 @@ Power BI custom visual showing a day of week, hour of day heatmap
 
 
 ![Chart Graphic](./assets/heatmapExample1.png | width="800")
+<img src="./assets/heatmapExample1.png" width="800">
 
 This custom visual for Microsoft Power BI displays a day of week, hour of day heatmap. The chart is a specific case of the generalised two dimensional heatmap where data is ordered by days and time of day. The visual supports:
 + Display of data by working days, weekends and bank holidays
