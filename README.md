@@ -15,6 +15,7 @@ This custom visual for Microsoft Power BI displays a day of week, hour of day he
 <img src="./assets/selectionExample2.png" width="800">
 
 *Configuration Options*
+
 <img src="./assets/formattingOptions.png" width="200">
 
 Sample data is included within the Sample Data folder.
