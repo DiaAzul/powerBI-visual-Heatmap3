@@ -26,6 +26,7 @@
 
 module powerbi.extensibility.visual {
   'use strict';
+
   import DataViewObjectsParser = powerbi.extensibility.utils.dataview.DataViewObjectsParser;
 
   export class VisualSettings extends DataViewObjectsParser {
@@ -50,15 +51,21 @@ module powerbi.extensibility.visual {
     // Defaulty colorBrewer colour sceme
     public colorScheme: string = 'YlGnBu';
     // Default minimum colour for custom colour range
-    public lowestColour: string = '#ffffd9';
+    public lowestColor: string = '#ffffd9';
     // Default mid colour for custom colour range (only applies to 3 color custom scheme)
-    public midColour: string = '#ffffd9';
+    public midColor: string = '#ffffd9';
     // Default maximum colour for custom colour range
-    public highestColour: string = '#005EB8';
+    public highestColor: string = '#005EB8';
     // Units label;
     public unitsLabel: string = 'Units';
     // Tile Shapes;
     public tileShape: string = 'rounded1';
+    // Tiles and legend background
+    public background: boolean = true;
+    // Tiles and legend background colour
+    public backgroundColor: string = '#b3b3b3';
+    // Tiles and legend backgound transparency
+    public backgroundOpacity: number = 0.2;
     // Transparent Opacity
     public transparent: number = 0;
     // Opaque opacity

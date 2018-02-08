@@ -1,4 +1,5 @@
 {
+    "supportsHighlight": false,
     "dataRoles": [
         {
             "displayName": "Day of Week",
@@ -156,7 +157,31 @@
                     "type": {
                         "text": true
                     }
+                },
+                "background": {
+                    "displayName": "Background",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "backgroundColor": {
+                    "displayName": "Color",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "percentile": {
+                    "displayName": "Opacity",
+                    "type": {
+                        "numeric": true
+                    }
+
                 }
+
             }
         }
     }

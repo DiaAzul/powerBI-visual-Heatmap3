@@ -93,17 +93,16 @@ module powerbi.extensibility.visual {
             });
             //#endregion
 
-            //#region Bind events to ageRanges
+            //#region Bind events to day of week
             this.params.categories.on('click', (el: SVGElement): void => {
                 if (!(d3.event as MouseEvent).ctrlKey) {
                     this.clearSelection();
                 }
-
                 this.params.visualDataPoints.data().forEach((d: SVGElement) => {
                     const dataPoint: IDataPoint = DataPoint.convert(d);
                     // Not sure why there are no attributes on el (must be something to do with d3 axis), but following works.
                     // tslint:disable-next-line:no-any
-                    if (dataPoint.dayOfWeek === (el as any)) {
+                    if (DataPoint.dayOfWeekIndex(dataPoint.dayOfWeek) === el['filter']) {
                         this.selectionHandler.handleSelection(dataPoint, true);
                     }
                 });
@@ -114,13 +113,12 @@ module powerbi.extensibility.visual {
 
             //#region Bind events to genders (male and female)
             this.params.axisLabel.on('click', (el: SVGElement): void => {
-
                 if (!(d3.event as MouseEvent).ctrlKey) {
                     this.clearSelection();
                 }
-
                 this.params.visualDataPoints.data().forEach((d: SVGElement) => {
                     const dataPoint: IDataPoint = DataPoint.convert(d);
+
                     if (dataPoint.hourOfDay === el['filter']) {
                         this.selectionHandler.handleSelection(dataPoint, true);
                     }
@@ -140,15 +138,20 @@ module powerbi.extensibility.visual {
          */
         public renderSelection(hasSelection: boolean): void {
             const settings: DataPointSettings = this.settings;
-
+            this.params.visualDataPoints.style('stroke', '#000000');
+            this.params.visualDataPoints.style('stroke-width', 2);
             if (hasSelection) {
                 // If data is selected, then set background bars to opaque and make selected bars solid.
+
                 this.params.visualDataPoints.style('fill-opacity', function (el: SVGElement): number {
-                    return (DataPoint.convert(el).selected) ? settings.solid : settings.opaque;
-                });
+                    return (DataPoint.convert(el).selected) ? settings.solid : settings.opaque; });
+                this.params.visualDataPoints.style('stroke-opacity', function (el: SVGElement): number {
+                    return (DataPoint.convert(el).selected) ? settings.solid : settings.transparent; });
+
             } else {
                 // If not selected, make all bars solid.
                 this.params.visualDataPoints.style('fill-opacity', settings.solid);
+                this.params.visualDataPoints.style('stroke-opacity', this.settings.transparent);
             }
         }
         /**

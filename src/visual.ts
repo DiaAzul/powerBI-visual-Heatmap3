@@ -26,6 +26,8 @@
 
 module powerbi.extensibility.visual {
     'use strict';
+
+    //#region data models
     import IVisual = powerbi.extensibility.visual.IVisual;
     import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
     import IInteractivityService = powerbi.extensibility.utils.interactivity.IInteractivityService;
@@ -113,6 +115,65 @@ module powerbi.extensibility.visual {
                 return null;
             }
         }
+
+        public static dayOfWeekIndex(day: string): number {
+            let dayIndex: number = 10;
+            switch (day.toLowerCase()) {
+                case 'monday':
+                case 'mon':
+                case 'mo':
+                case '0':
+                    dayIndex = 0;
+                    break;
+                case 'tuesday':
+                case 'tue':
+                case 'tu':
+                case '1':
+                    dayIndex = 1;
+                    break;
+                case 'wednesday':
+                case 'wed':
+                case 'we':
+                case '2':
+                    dayIndex = 2;
+                    break;
+                case 'thursday':
+                case 'thu':
+                case 'th':
+                case '3':
+                    dayIndex = 3;
+                    break;
+                case 'friday':
+                case 'fri':
+                case 'fr':
+                case '4':
+                    dayIndex = 4;
+                    break;
+                case 'saturday':
+                case 'sat':
+                case 'sa':
+                case '5':
+                    dayIndex = 5;
+                    break;
+                case 'sunday':
+                case 'sun':
+                case 'su':
+                case '6':
+                    dayIndex = 6;
+                    break;
+                case 'bank holiday':
+                case 'holiday':
+                case 'hol':
+                case 'bh':
+                case '7':
+                    dayIndex = 7;
+                    break;
+                default:
+                    dayIndex = 10;
+                    break;
+            }
+            return dayIndex;
+        }
     }
 
     /**
@@ -124,10 +185,11 @@ module powerbi.extensibility.visual {
     export interface ILabelData {
         name: string;
         text: string;
-        filter: string;
+        filter: number;
         location: string;
         anchor: string;
     }
+    //#endregion
 
     export class Visual implements IVisual {
         private host: IVisualHost;
@@ -137,7 +199,6 @@ module powerbi.extensibility.visual {
         private settings: VisualSettings = new VisualSettings();
         private viewModel: ChartViewModel = new ChartViewModel();
         private selectionTools: VisualSelectionTools;
-        private selectionManager: ISelectionManager;
         private colorTools: ColorTools = new ColorTools();
         private locale: string;
         private wasHighlighted: boolean;
@@ -156,9 +217,6 @@ module powerbi.extensibility.visual {
             this.selectionTools.clearCatcher = appendClearCatcher(this.svg) as d3.Selection<SVGElement>;
             this.selectionTools.allowInteractions = this.host.allowInteractions;
             this.selectionTools.settings = this.settings.dataPoint;
-
-            // TODO: Replace selection manager with my selection tools
-            this.selectionManager = options.host.createSelectionManager();
         }
 
         public update(options: VisualUpdateOptions): void {
@@ -170,15 +228,17 @@ module powerbi.extensibility.visual {
             this.refreshData(this.viewModel, options);
             this.updateState();
 
+            //
             // Draw the visual
+            //
             this.heatmap(options.viewport.width, options.viewport.height, this.viewModel.dataPoints);
 
             if (this.selectionTools.allowInteractions) {
                 // Select all clickable data points (class are added when drawing the visual and then used to select event targets)
                 const selectionToolsParams: ISelectionToolsParams = {
                     visualDataPoints: this.chart.selectAll('.dataPoint'),
-                    categories: this.chart.selectAll('.categories'),
-                    axisLabel: this.chart.selectAll('.axisLabel')
+                    categories: this.chart.selectAll('.dayLabel'),
+                    axisLabel: this.chart.selectAll('.timeLabel')
                 };
 
                 // Bind event handlers to the event targets.
@@ -214,32 +274,45 @@ module powerbi.extensibility.visual {
             // For each control object provie a link between the uer interface and the settings property
             switch (objectName) {
                 case 'formatting':
-                    let formattingProperties: any = null; // define variable as an object (otherwise we cannot add new properties to it)
-                    formattingProperties = {
-                        bankHoliday: settings.bankHoliday,
-                        fontSize: settings.axisFontSize,
-                        unitsLabel: settings.unitsLabel,
-                        tileShape: settings.tileShape,
-                        colorScheme: settings.colorScheme
-                    };
-
-                    // If we want a custom colour scheme add the correct colour selectors (two or three colour schemes)
-                    // if custom colour chosen in drop down colour Scheme list
+                    const formatProperties: {
+                        bankHoliday: boolean,
+                        fontSize: number,
+                        unitsLabel: string,
+                        tileShape: string,
+                        colorScheme: string,
+                        background: boolean;
+                        backgroundColor?: { solid: { color: string } };
+                        percentile?: number;
+                        lowestColor?: { solid: { color: string } }, // Optional elements that will be displayed depending on colorScheme
+                        midColor?: { solid: { color: string } },
+                        highestColor?: { solid: { color: string } }
+                    } = {
+                            bankHoliday: settings.bankHoliday,
+                            fontSize: settings.axisFontSize,
+                            unitsLabel: settings.unitsLabel,
+                            tileShape: settings.tileShape,
+                            colorScheme: settings.colorScheme,
+                            background: settings.background
+                        };
+                    if (settings.background) {
+                        formatProperties['backgroundColor'] = { solid: { color: settings.backgroundColor } };
+                        formatProperties['percentile'] = settings.backgroundOpacity;
+                    }
                     switch (settings.colorScheme) {
                         case 'Custom2':
-                            formattingProperties.lowestColour = settings.lowestColour;
-                            formattingProperties.highestColour = settings.highestColour;
+                            formatProperties['lowestColor'] = { solid: { color: settings.lowestColor } };
+                            formatProperties['highestColor'] = { solid: { color: settings.highestColor } };
                             break;
                         case 'Custom3':
-                            formattingProperties.lowestColour = settings.lowestColour;
-                            formattingProperties.midColour = settings.midColour;
-                            formattingProperties.highestColour = settings.highestColour;
+                            formatProperties['lowestColor'] = { solid: { color: settings.lowestColor } };
+                            formatProperties['midColor'] = { solid: { color: settings.midColor } };
+                            formatProperties['highestColor'] = { solid: { color: settings.highestColor } };
                             break;
                         default:
                     }
                     objectEnumeration.push({
                         objectName: objectName,
-                        properties: formattingProperties,
+                        properties: formatProperties,
                         selector: null
                     });
                 default:
@@ -259,24 +332,30 @@ module powerbi.extensibility.visual {
          *
          */
         private parseSettings(dataView: DataView): VisualSettings {
+
             const visualSettings: VisualSettings = <VisualSettings>VisualSettings.parse(dataView);
 
             const root: DataViewObjects = dataView.metadata.objects;
             const setting: DataPointSettings = visualSettings.dataPoint;
 
-            if ('formatting' in dataView.metadata.objects) {
-                const formatting: DataViewObject = root['formatting'];
+            if (root != null) {
 
-                setting.bankHoliday = ('bankHoliday' in formatting) ? <boolean>formatting['bankHoliday'] : setting.bankHoliday;
-                setting.axisFontSize = ('fontSize' in formatting) ? <number>formatting['fontSize'] : setting.axisFontSize;
-                setting.tileShape = ('tileShape' in formatting) ? <string>formatting['tileShape'] : setting.tileShape;
-                setting.colorScheme = ('colorScheme' in formatting) ? <string>formatting['colorScheme'] : setting.colorScheme;
-                setting.lowestColour = ('lowestColour' in formatting) ? <string>formatting['lowestColour']['solid']['color'] : setting.lowestColour;
-                setting.midColour = ('midColour' in formatting) ? <string>formatting['midColour']['solid']['color'] : setting.midColour;
-                setting.highestColour = ('highestColour' in formatting) ? <string>formatting['highestColour']['solid']['color'] : setting.highestColour;
-                setting.unitsLabel = ('unitsLabel' in formatting) ? <string>formatting['unitsLabel'] : setting.unitsLabel;
+                if ('formatting' in root) {
+                    const formatting: DataViewObject = root['formatting'];
+
+                    setting.bankHoliday = ('bankHoliday' in formatting) ? <boolean>formatting['bankHoliday'] : setting.bankHoliday;
+                    setting.axisFontSize = ('fontSize' in formatting) ? <number>formatting['fontSize'] : setting.axisFontSize;
+                    setting.tileShape = ('tileShape' in formatting) ? <string>formatting['tileShape'] : setting.tileShape;
+                    setting.colorScheme = ('colorScheme' in formatting) ? <string>formatting['colorScheme'] : setting.colorScheme;
+                    setting.lowestColor = ('lowestColour' in formatting) ? <string>formatting['lowestColour']['solid']['color'] : setting.lowestColor;
+                    setting.midColor = ('midColour' in formatting) ? <string>formatting['midColour']['solid']['color'] : setting.midColor;
+                    setting.highestColor = ('highestColour' in formatting) ? <string>formatting['highestColour']['solid']['color'] : setting.highestColor;
+                    setting.unitsLabel = ('unitsLabel' in formatting) ? <string>formatting['unitsLabel'] : setting.unitsLabel;
+                    setting.background = ('background' in formatting) ? <boolean>formatting['background'] : setting.background;
+                    setting.backgroundColor = ('backgroundColor' in formatting) ? <string>formatting['backgroundColor']['solid']['color'] : setting.backgroundColor;
+                    setting.backgroundOpacity = ('percentile' in formatting) ? <number>formatting['percentile'] : setting.backgroundOpacity;
+                }
             }
-
             return visualSettings;
         }
 
@@ -380,49 +459,74 @@ module powerbi.extensibility.visual {
             const settings: DataPointSettings = this.settings.dataPoint;
             const bankHoliday: boolean = settings.bankHoliday;
             const chartFontSize: string = settings.axisFontSize.toString().concat('pt'); //'8pt';
-            const lowestColour: string = settings.lowestColour;
-            const midColour: string = settings.midColour;
-            const highestColour: string = settings.highestColour;
+            const lowestColour: string = settings.lowestColor;
+            const midColour: string = settings.midColor;
+            const highestColour: string = settings.highestColor;
             const unitsLabel: string = settings.unitsLabel;
             const colorScheme: string = settings.colorScheme;
             const tileShape: string = settings.tileShape;
-            const selectionManager: ISelectionManager = this.selectionManager;
             const allowInteractions: boolean = this.host.allowInteractions;
-            const solidOpacity: number = 1;
-            const transparentOpacity: number = 0.5;
+            const background: boolean = settings.background;
+            const backgroundColor: string = settings.backgroundColor;
+            const backgroundOpacity: number = settings.backgroundOpacity / 100;
 
             // RefTextSize is the size of a character on screen (used for adjusting chart for different type sizes)
-            const refTextSize: any = this.textSize('W', chartFontSize);
+            const refTextSize: { width: number, height: number } = this.textSize('W', chartFontSize);
 
-            const margin: any = { top: refTextSize.height + 5, left: refTextSize.width * 3 + 5, bottom: 0, right: 0 };
-            const width: number = windowWidth - margin.left - margin.right;
-            const height: number = windowHeight - margin.top - margin.bottom;
-            const gridSize: number = Math.floor(width / 24);
+            const fillet: number = 5;
+            const margin: { top: number, right: number, bottom: number, left: number }
+                = { top: refTextSize.height + 2 * fillet, left: refTextSize.width * 3 + fillet, bottom: fillet, right: fillet };
+
+            const chartWidth: number = windowWidth - margin.left - margin.right;
+            const chartHeight: number = windowHeight - margin.top - margin.bottom;
+
+            const gridSize: number = Math.floor(chartWidth / 24);
             const gridBreak: number = Math.ceil(gridSize / 2);
             const legendElementWidth: number = gridSize * 2;
             const buckets: number = 9;
-            let rx: number = 0;
-            let ry: number = 0;
-            const times: string[] = ['0', '1a', '2a', '3a', '4a', '5a', '6a', '7a', '8a', '9a', '10a', '11a', '12', '1p', '2p', '3p', '4p', '5p', '6p', '7p', '8p', '9p', '10p', '11p'];
 
-            // let selectedTiles = localSelectionTools.selectionManager.getSelectionIds();
+            const backgroundWidth: number = margin.left + margin.right + gridSize * 24;
+            const backgroundHeight: number = margin.top + margin.bottom + (bankHoliday ? 8 : 7) * gridSize + (bankHoliday ? 2 : 1) * gridBreak;
+            const legendHeight: number = gridSize / 2 + refTextSize.height * 2 + 2 * fillet;
 
             //
             // CREATE SVG
             //
-            if (this.svg != null && !this.svg.empty()) {
-                d3.select('svg').remove();
+            this.svg
+                .attr('width', windowWidth)
+                .attr('height', windowHeight)
+                .style('fill-opacity', settings.transparent);
+
+            if (this.chart != null && !this.chart.empty()) {
+                this.svg.selectAll('#chart').remove();
             }
-            this.svg = d3.select(this.target).append('svg')
-                .attr('width', width + margin.left + margin.right)
-                .attr('height', height + margin.top + margin.bottom)
+
+            this.chart = this.svg
                 .append('g')
-                .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+                .attr('id', 'chart')
+                .attr('width', chartWidth)
+                .attr('height', chartHeight)
+                .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+                .style('fill-opacity', settings.solid);
 
             //
-            // Y-AXIS
-            // Create the labels for the vertical axis (adapting for inclusion of bank holidays)
+            // ADD A BACKGROUND TO AXIS AND TILES TO PROVIDE VISUAL COHERENCE
             //
+
+            if (background) {
+                this.chart.append('rect')
+                    .attr('id', 'background')
+                    .attr('width', backgroundWidth)
+                    .attr('height', backgroundHeight)
+                    .attr('transform', 'translate(-' + margin.left + ',-' + margin.top + ')')
+                    .style('fill', backgroundColor)
+                    .style('fill-opacity', backgroundOpacity);
+            }
+
+            //
+            // CREATE AXIS LABELS
+            //
+
             const yLegend: number = (bankHoliday ? 8 : 7) * gridSize + (bankHoliday ? 3 : 2) * gridBreak;
             const days: string[] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
             if (bankHoliday) {
@@ -431,35 +535,62 @@ module powerbi.extensibility.visual {
                 data = data.filter(notBankHoliday);
             }
 
-            //
-            // CREATE AXIS LABELS
-            // TODO: Allow highlighting time of day, day of week
-            // TODO: Allow typeface selection and color choice
-            //
-            const dayLabels: d3.Selection<string> = this.svg.selectAll('.dayLabel')
-                .data(days)
+            const dayLabelData: ILabelData[] = [];
+            for (const day of days) {
+                dayLabelData.push(
+                    {
+                        name: 'dayLabel',
+                        text: day,
+                        filter: DataPoint.dayOfWeekIndex(day),
+                        location: svgUtils.translate(0, 0),
+                        anchor: 'end'
+                    }
+                );
+            }
+
+            const dayLabels: d3.Selection<ILabelData> = this.chart.selectAll('.dayLabel')
+                .data(dayLabelData)
                 .enter().append('text')
-                .text(function (d: string): string { return d; })
+                .attr('class', 'dayLabel')
+                .text(function (d: ILabelData): string { return d.text; })
                 .style('font-size', chartFontSize)
                 .attr('x', -5)
-                .attr('y', function (d: string, i: number): number { return yOffset(i, gridSize, gridBreak); })
+                .attr('y', function (d: ILabelData, i: number): number { return yOffset(i, gridSize, gridBreak); })
                 .style('text-anchor', 'end')
                 .attr('transform', 'translate(-6,' + gridSize / 1.5 + ')');
-            //.attr('class', function (d, i) { return ((i >= 0 && i <= 4) ? 'dayLabel mono axis axis-workweek' : 'dayLabel mono axis'); });
 
-            const timeLabels: d3.Selection<string> = this.svg.selectAll('.timeLabel')
-                .data(times)
+            const times: string[] = ['0', '1a', '2a', '3a', '4a', '5a', '6a', '7a', '8a', '9a', '10a', '11a', '12',
+                '1p', '2p', '3p', '4p', '5p', '6p', '7p', '8p', '9p', '10p', '11p'];
+
+            const timeLabelData: ILabelData[] = [];
+            {
+                let count: number = 0;
+                for (const time of times) {
+                    timeLabelData.push(
+                        {
+                            name: 'timeLabel',
+                            text: time,
+                            filter: count++,
+                            location: svgUtils.translate(0, 0),
+                            anchor: 'middle'
+                        }
+                    );
+                }
+            }
+
+            const timeLabels: d3.Selection<ILabelData> = this.chart.selectAll('.timeLabel')
+                .data(timeLabelData)
                 .enter().append('text')
-                .text(function (d: string): string { return d; })
+                .attr('class', 'timeLabel')
+                .text(function (d: ILabelData): string { return d.text; })
                 .style('font-size', chartFontSize)
-                .attr('x', function(d: string, i: number): number { return i * gridSize; })
+                .attr('x', function (d: ILabelData, i: number): number { return i * gridSize; })
                 .attr('y', -5)
                 .style('text-anchor', 'middle')
                 .attr('transform', 'translate(' + gridSize / 2 + ', -6)');
-            //.attr('class', function (d, i) { return ((i >= 7 && i <= 16) ? 'timeLabel mono axis axis-worktime' : 'timeLabel mono axis'); });
 
             //
-            // CREATE COLOUR SCHEME AND QUANTISATION OF DATA
+            // DEFINE COLOR SCHEME
             //
             let colors: string[] = [];
 
@@ -480,73 +611,44 @@ module powerbi.extensibility.visual {
                 .range(colors);
 
             //
-            // TILE SHAPE
-            // Allow choice of tile shapes from square to round
-            //
-            switch (tileShape) {
-                case 'rounded1':
-                    rx = gridSize * 0.1;
-                    ry = gridSize * 0.1;
-                    break;
-                case 'rounded2':
-                    rx = gridSize * 0.25;
-                    ry = gridSize * 0.25;
-                    break;
-                case 'round':
-                    rx = gridSize * 0.5;
-                    ry = gridSize * 0.5;
-                    break;
-                case 'square':
-                default:
-                    rx = 0;
-                    ry = 0;
-                    break;
-            }
-
-            //
             // ADD DATAPOINTS TO CHART
             //
-            // TODO: Make datapoints iSelectable.
-            //
 
-            const cards: d3.selection.Update<DataPoint> = this.svg.selectAll('.hour')
-                .data(data, function (d: DataPoint): string { return dow(d.dayOfWeek) + ':' + d.hourOfDay; });
+            const tiles: d3.selection.Update<DataPoint> = this.chart.selectAll('.hour')
+                .data(data, function (d: DataPoint): string { return DataPoint.dayOfWeekIndex(d.dayOfWeek) + ':' + d.hourOfDay; });
 
-            cards.append('title');
+            tiles.append('title');
 
-            cards.enter().append('rect')
+            const radius: number = gridSize * bevel(tileShape);
+
+            tiles.enter().append('rect')
+                .attr('class', 'dataPoint')
                 .attr('x', function (d: DataPoint): number { return xOffset(Number(d.hourOfDay), gridSize); })
-                .attr('y', function (d: DataPoint): number { return yOffset(dow(d.dayOfWeek), gridSize, gridBreak); })
+                .attr('y', function (d: DataPoint): number { return yOffset(DataPoint.dayOfWeekIndex(d.dayOfWeek), gridSize, gridBreak); })
                 .attr('id', function (d: DataPoint): string { return d.dayOfWeek + ':' + d.hourOfDay; })
-                .attr('rx', rx)
-                .attr('ry', ry)
+                .attr('rx', radius)
+                .attr('ry', radius)
                 .attr('width', gridSize)
                 .attr('height', gridSize)
-                .style('fill', function (d: DataPoint): string { return colorScale(d.value); })
-                .on('click', function (d: DataPoint) {
-                    // Allow selection only if the visual is rendered in a view that supports interactivity (e.g. Report)
-                    if (allowInteractions) {
-                        selectionManager.select(d.selectionId).then((ids: ISelectionId[]) => {
-                            cards.attr({
-                                'fill-opacity': ids.length > 0 ? transparentOpacity : solidOpacity
-                            });
-                            d3.select(this).attr({
-                                'fill-opacity': solidOpacity
-                            });
-                        });
-
-                        (<Event>d3.event).stopPropagation();
-                    }
-                });
+                .style('fill', function (d: DataPoint): string { return colorScale(d.value); });
 
             //
             // ADD A CHART LEGEND
             //
             // TODO: Option to move legend to top, left, right, bottom of chart.
             //
+            if (background) {
+                this.chart.append('rect')
+                    .attr('id', 'legendBackground')
+                    .attr('width', backgroundWidth)
+                    .attr('height', legendHeight)
+                    .attr('transform', 'translate(-' + margin.left + ',' + (yLegend - fillet) + ')')
+                    .style('fill', backgroundColor)
+                    .style('fill-opacity', backgroundOpacity);
+            }
 
-            const legend: d3.selection.Update<number> = this.svg.selectAll('.legend')
-                .data([0].concat(colorScale.quantiles()), function (d) { return d.toString(); });
+            const legend: d3.selection.Update<number> = this.chart.selectAll('.legend')
+                .data([0].concat(colorScale.quantiles()), function (d: number): string { return d.toString(); });
 
             legend.append('g');
 
@@ -564,7 +666,7 @@ module powerbi.extensibility.visual {
                 .attr('y', yLegend + gridSize / 2 + refTextSize.height);
 
             // add units
-            this.svg.append('text')
+            this.chart.append('text')
                 .attr('x', 0)
                 .attr('y', yLegend + gridSize / 2 + refTextSize.height * 2)
                 .attr('text-anchor', 'left')
@@ -572,11 +674,9 @@ module powerbi.extensibility.visual {
                 .text(unitsLabel)
                 .style('font-size', chartFontSize);
 
-            /*
-            *
-            *  Helper functions
-            *
-            */
+            //
+            // HELPER FUNCTIONS
+            //
 
             //Calculate x location of tiles
             function xOffset(x: number, step: number): number {
@@ -588,85 +688,44 @@ module powerbi.extensibility.visual {
                 return y * step + ((y > 4) ? space : 0) + ((y > 6) ? space : 0);
             }
 
-            // Convert day of week to index value
-            function dow(dayOfWeek: string): number {
-                let dayIndex: number = 10;
-                switch (dayOfWeek.toLowerCase()) {
-                    case 'monday':
-                    case 'mon':
-                    case 'mo':
-                    case '0':
-                        dayIndex = 0;
-                        break;
-                    case 'tuesday':
-                    case 'tue':
-                    case 'tu':
-                    case '1':
-                        dayIndex = 1;
-                        break;
-                    case 'wednesday':
-                    case 'wed':
-                    case 'we':
-                    case '2':
-                        dayIndex = 2;
-                        break;
-                    case 'thursday':
-                    case 'thu':
-                    case 'th':
-                    case '3':
-                        dayIndex = 3;
-                        break;
-                    case 'friday':
-                    case 'fri':
-                    case 'fr':
-                    case '4':
-                        dayIndex = 4;
-                        break;
-                    case 'saturday':
-                    case 'sat':
-                    case 'sa':
-                    case '5':
-                        dayIndex = 5;
-                        break;
-                    case 'sunday':
-                    case 'sun':
-                    case 'su':
-                    case '6':
-                        dayIndex = 6;
-                        break;
-                    case 'bank holiday':
-                    case 'holiday':
-                    case 'hol':
-                    case 'bh':
-                    case '7':
-                        dayIndex = 7;
-                        break;
-                    default:
-                        dayIndex = 10;
-                        break;
-                }
-                return dayIndex;
+            // Function to identify bank holidays in data so that they can be filtered out.
+            function notBankHoliday(record: DataPoint): boolean {
+                return (DataPoint.dayOfWeekIndex(record.dayOfWeek) === 7) ? false : true;
             }
 
             // TODO: Add fixed bounds to upper and lower scale values
             // Creates a distribution across n bands
             // TODO : Exponential, Logarithmic, Linear
-            function distribution(data: DataPoint[], bands: number): number[] {
+            function distribution(distributionData: DataPoint[], bands: number): number[] {
                 let disValues: number[] = [];
 
-                disValues = [0, d3.max(data, function (d) { return d.value; })];
+                disValues = [0, d3.max(distributionData, function (d: DataPoint): number { return d.value; })];
 
                 return disValues;
             }
 
-            // Function to identify bank holidays in data so that they can be filtered out.
-            function notBankHoliday(record: DataPoint): boolean {
-                return (dow(record.dayOfWeek) === 7) ? false : true;
+            function bevel(shape: string): number {
+                let bevelScale: number = 0;
+                switch (tileShape) {
+                    case 'rounded1':
+                        bevelScale = 0.1;
+                        break;
+                    case 'rounded2':
+                        bevelScale = 0.25;
+                        break;
+                    case 'round':
+                        bevelScale = 0.5;
+                        break;
+                    case 'square':
+                    default:
+                        bevelScale = 0;
+                }
+                return bevelScale;
             }
+
         }
 
-        // TODO: Power BI has tools for determining text size, etc...
-        /**
+        /*
          * Method to return the size of a text node (Written for SVG1.1, with SVG2 could use SVGGraphicsElement more elegantly)
          * TODO: Include Font/Type within the definition.
          *
