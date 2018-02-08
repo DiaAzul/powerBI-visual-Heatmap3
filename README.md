@@ -1,7 +1,7 @@
 # powerBI-visual-Heatmap3
 Power BI custom visual showing a day of week, hour of day heatmap
 
-![Build Status](https://travis-ci.org/DiaAzul/powerBI-visual-PopPyramid3.svg?branch=Version-1.10.0) [![Coverage Status](https://coveralls.io/repos/github/DiaAzul/powerBI-visual-PopPyramid3/badge.svg?branch=Version-1.10.0)](https://coveralls.io/github/DiaAzul/powerBI-visual-PopPyramid3?branch=Version-1.10.0) [![dependencies Status](https://david-dm.org/diaazul/powerBI-visual-PopPyramid3/status.svg)](https://david-dm.org/diaazul/powerBI-visual-PopPyramid3)
+![Build Status](https://travis-ci.org/DiaAzul/powerBI-visual-Heatmap3.svg?branch=master) [![Coverage Status](https://coveralls.io/repos/github/DiaAzul/powerBI-visual-Heatmap3/badge.svg?branch=master)](https://coveralls.io/github/DiaAzul/powerBI-visual-Heatmap3?branch=master) [![dependencies Status](https://david-dm.org/diaazul/powerBI-visual-Heatmap3/status.svg)](https://david-dm.org/diaazul/powerBI-visual-PopPyramid3)
 
 <img src="./assets/heatmapExample1.png" width="600">
 
