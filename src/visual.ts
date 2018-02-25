@@ -284,7 +284,7 @@ module powerbi.extensibility.visual {
                         unitsLabel: string,
                         tileShape: string,
                         colorScheme: string,
-                        background: boolean;
+                        background?: boolean;
                         backgroundColor?: { solid: { color: string } };
                         percentile?: number;
                         lowestColor?: { solid: { color: string } }, // Optional elements that will be displayed depending on colorScheme
@@ -296,12 +296,7 @@ module powerbi.extensibility.visual {
                             unitsLabel: settings.unitsLabel,
                             tileShape: settings.tileShape,
                             colorScheme: settings.colorScheme,
-                            background: settings.background
                         };
-                    if (settings.background) {
-                        formatProperties['backgroundColor'] = { solid: { color: settings.backgroundColor } };
-                        formatProperties['percentile'] = settings.backgroundOpacity;
-                    }
                     switch (settings.colorScheme) {
                         case 'Custom2':
                             formatProperties['lowestColor'] = { solid: { color: settings.lowestColor } };
@@ -313,6 +308,11 @@ module powerbi.extensibility.visual {
                             formatProperties['highestColor'] = { solid: { color: settings.highestColor } };
                             break;
                         default:
+                    }
+                    formatProperties['background'] = settings.background;
+                    if (settings.background) {
+                        formatProperties['backgroundColor'] = { solid: { color: settings.backgroundColor } };
+                        formatProperties['percentile'] = settings.backgroundOpacity;
                     }
                     objectEnumeration.push({
                         objectName: objectName,

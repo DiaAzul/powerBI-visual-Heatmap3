@@ -4,7 +4,7 @@
     "displayName": "Heatmap3",
     "guid": "heatmap3a04841BE9D3CB4C4DA1353BE94873A343",
     "visualClassName": "Visual",
-    "version": "1.11.0",
+    "version": "1.11.1",
     "description": "Two dimensional heamap matrix by day of week, bank holiday and hour of day",
     "supportUrl": "",
     "gitHubUrl": ""
