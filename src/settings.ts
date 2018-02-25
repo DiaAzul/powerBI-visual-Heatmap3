@@ -65,7 +65,7 @@ module powerbi.extensibility.visual {
     // Tiles and legend background colour
     public backgroundColor: string = '#b3b3b3';
     // Tiles and legend backgound transparency
-    public backgroundOpacity: number = 0.2;
+    public backgroundOpacity: number = 20; // Percentage sliders are 0 - 100
     // Transparent Opacity
     public transparent: number = 0;
     // Opaque opacity

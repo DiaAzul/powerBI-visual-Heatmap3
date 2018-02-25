@@ -122,7 +122,7 @@
                         ]
                     }
                 },
-                "lowestColour": {
+                "lowestColor": {
                     "displayName": "Lowest Colour",
                     "type": {
                         "fill": {
@@ -132,7 +132,7 @@
                         }
                     }
                 },
-                "midColour": {
+                "midColor": {
                     "displayName": "Middle Colour",
                     "type": {
                         "fill": {
@@ -142,7 +142,7 @@
                         }
                     }
                 },
-                "highestColour": {
+                "highestColor": {
                     "displayName": "Highest Colour",
                     "type": {
                         "fill": {

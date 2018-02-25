@@ -195,6 +195,7 @@ module powerbi.extensibility.visual {
         private host: IVisualHost;
         private target: HTMLElement;
         private svg: d3.Selection<SVGElement>;
+        private background: d3.Selection<SVGElement>;
         private chart: d3.Selection<SVGElement>;
         private settings: VisualSettings = new VisualSettings();
         private viewModel: ChartViewModel = new ChartViewModel();
@@ -210,6 +211,9 @@ module powerbi.extensibility.visual {
             this.locale = options.host.locale;
 
             this.svg = d3.select(this.target).append('svg');
+
+            this.background = this.svg.append('g')
+                .attr('id', 'background');
 
             // Create selection tools to manage data selections in the visual
             this.selectionTools = new VisualSelectionTools(this.host);
@@ -280,7 +284,7 @@ module powerbi.extensibility.visual {
                         unitsLabel: string,
                         tileShape: string,
                         colorScheme: string,
-                        background: boolean;
+                        background?: boolean;
                         backgroundColor?: { solid: { color: string } };
                         percentile?: number;
                         lowestColor?: { solid: { color: string } }, // Optional elements that will be displayed depending on colorScheme
@@ -292,12 +296,7 @@ module powerbi.extensibility.visual {
                             unitsLabel: settings.unitsLabel,
                             tileShape: settings.tileShape,
                             colorScheme: settings.colorScheme,
-                            background: settings.background
                         };
-                    if (settings.background) {
-                        formatProperties['backgroundColor'] = { solid: { color: settings.backgroundColor } };
-                        formatProperties['percentile'] = settings.backgroundOpacity;
-                    }
                     switch (settings.colorScheme) {
                         case 'Custom2':
                             formatProperties['lowestColor'] = { solid: { color: settings.lowestColor } };
@@ -309,6 +308,11 @@ module powerbi.extensibility.visual {
                             formatProperties['highestColor'] = { solid: { color: settings.highestColor } };
                             break;
                         default:
+                    }
+                    formatProperties['background'] = settings.background;
+                    if (settings.background) {
+                        formatProperties['backgroundColor'] = { solid: { color: settings.backgroundColor } };
+                        formatProperties['percentile'] = settings.backgroundOpacity;
                     }
                     objectEnumeration.push({
                         objectName: objectName,
@@ -513,12 +517,13 @@ module powerbi.extensibility.visual {
             // ADD A BACKGROUND TO AXIS AND TILES TO PROVIDE VISUAL COHERENCE
             //
 
+            this.background.selectAll('#background').remove();
             if (background) {
-                this.chart.append('rect')
+                this.background.append('rect')
                     .attr('id', 'background')
                     .attr('width', backgroundWidth)
                     .attr('height', backgroundHeight)
-                    .attr('transform', 'translate(-' + margin.left + ',-' + margin.top + ')')
+                    //.attr('transform', 'translate(-' + margin.left + ',-' + margin.top + ')')
                     .style('fill', backgroundColor)
                     .style('fill-opacity', backgroundOpacity);
             }
@@ -637,15 +642,16 @@ module powerbi.extensibility.visual {
             //
             // TODO: Option to move legend to top, left, right, bottom of chart.
             //
+            this.background.selectAll('#legendBackground').remove();
             if (background) {
-                this.chart.append('rect')
+                this.background.append('rect')
                     .attr('id', 'legendBackground')
                     .attr('width', backgroundWidth)
                     .attr('height', legendHeight)
-                    .attr('transform', 'translate(-' + margin.left + ',' + (yLegend - fillet) + ')')
+                    .attr('transform', 'translate(0,' + (margin.top + yLegend - fillet) + ')')
                     .style('fill', backgroundColor)
                     .style('fill-opacity', backgroundOpacity);
-            }
+                }
 
             const legend: d3.selection.Update<number> = this.chart.selectAll('.legend')
                 .data([0].concat(colorScale.quantiles()), function (d: number): string { return d.toString(); });
