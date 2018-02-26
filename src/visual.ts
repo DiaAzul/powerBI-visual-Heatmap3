@@ -295,7 +295,7 @@ module powerbi.extensibility.visual {
                             fontSize: settings.axisFontSize,
                             unitsLabel: settings.unitsLabel,
                             tileShape: settings.tileShape,
-                            colorScheme: settings.colorScheme,
+                            colorScheme: settings.colorScheme
                         };
                     switch (settings.colorScheme) {
                         case 'Custom2':
@@ -351,9 +351,9 @@ module powerbi.extensibility.visual {
                     setting.axisFontSize = ('fontSize' in formatting) ? <number>formatting['fontSize'] : setting.axisFontSize;
                     setting.tileShape = ('tileShape' in formatting) ? <string>formatting['tileShape'] : setting.tileShape;
                     setting.colorScheme = ('colorScheme' in formatting) ? <string>formatting['colorScheme'] : setting.colorScheme;
-                    setting.lowestColor = ('lowestColour' in formatting) ? <string>formatting['lowestColour']['solid']['color'] : setting.lowestColor;
-                    setting.midColor = ('midColour' in formatting) ? <string>formatting['midColour']['solid']['color'] : setting.midColor;
-                    setting.highestColor = ('highestColour' in formatting) ? <string>formatting['highestColour']['solid']['color'] : setting.highestColor;
+                    setting.lowestColor = ('lowestColor' in formatting) ? <string>formatting['lowestColor']['solid']['color'] : setting.lowestColor;
+                    setting.midColor = ('midColor' in formatting) ? <string>formatting['midColor']['solid']['color'] : setting.midColor;
+                    setting.highestColor = ('highestColor' in formatting) ? <string>formatting['highestColor']['solid']['color'] : setting.highestColor;
                     setting.unitsLabel = ('unitsLabel' in formatting) ? <string>formatting['unitsLabel'] : setting.unitsLabel;
                     setting.background = ('background' in formatting) ? <boolean>formatting['background'] : setting.background;
                     setting.backgroundColor = ('backgroundColor' in formatting) ? <string>formatting['backgroundColor']['solid']['color'] : setting.backgroundColor;
@@ -463,9 +463,9 @@ module powerbi.extensibility.visual {
             const settings: DataPointSettings = this.settings.dataPoint;
             const bankHoliday: boolean = settings.bankHoliday;
             const chartFontSize: string = settings.axisFontSize.toString().concat('pt'); //'8pt';
-            const lowestColour: string = settings.lowestColor;
-            const midColour: string = settings.midColor;
-            const highestColour: string = settings.highestColor;
+            const lowestColor: string = settings.lowestColor;
+            const midColor: string = settings.midColor;
+            const highestColor: string = settings.highestColor;
             const unitsLabel: string = settings.unitsLabel;
             const colorScheme: string = settings.colorScheme;
             const tileShape: string = settings.tileShape;
@@ -601,10 +601,10 @@ module powerbi.extensibility.visual {
 
             switch (colorScheme) {
                 case 'Custom2':
-                    colors = this.colorTools.interpolatedTwoColours(lowestColour, highestColour, buckets);
+                    colors = this.colorTools.interpolatedTwoColors(lowestColor, highestColor, buckets);
                     break;
                 case 'Custom3':
-                    colors = this.colorTools.interpolatedThreeColours(lowestColour, midColour, highestColour, buckets);
+                    colors = this.colorTools.interpolatedThreeColors(lowestColor, midColor, highestColor, buckets);
                     break;
                 default:
                     colors = this.colorTools.colorScale(colorScheme, buckets);

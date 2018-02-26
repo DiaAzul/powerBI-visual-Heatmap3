@@ -329,7 +329,7 @@ class ColorTools {
         return colorScale;
     }
 
-    public interpolatedTwoColours(lowestColour: string, highestColour: string, steps: number): string[] {
+    public interpolatedTwoColors(lowestColour: string, highestColour: string, steps: number): string[] {
 
         const colours: string[] = [];
 
@@ -343,7 +343,7 @@ class ColorTools {
     }
 
     // Interpolate create an array of n interpolated colours across three RGB colours
-    public interpolatedThreeColours(lowestColour: string, midColour: string, highestColour: string, steps: number): string[] {
+    public interpolatedThreeColors(lowestColour: string, midColour: string, highestColour: string, steps: number): string[] {
 
         const colours: string[] = [];
 
