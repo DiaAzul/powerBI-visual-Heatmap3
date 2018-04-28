@@ -202,8 +202,6 @@ module powerbi.extensibility.visual {
         private selectionTools: VisualSelectionTools;
         private colorTools: ColorTools = new ColorTools();
         private locale: string;
-        private wasHighlighted: boolean;
-        private wasSelected: boolean;
 
         constructor(options: VisualConstructorOptions) {
             this.target = options.element;
