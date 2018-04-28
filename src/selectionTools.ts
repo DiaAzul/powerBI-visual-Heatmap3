@@ -133,7 +133,7 @@ module powerbi.extensibility.visual {
         /**
          * Called when the visual need to render the selection
          * Required as part of the implementation of IInteracticeBehavior
-         * @param {bolean} hasSelection - True if data has been loaded into the interactivity service.
+         * @param {boolean} hasSelection - True if data has been loaded into the interactivity service.
          * @return {void}
          */
         public renderSelection(hasSelection: boolean): void {
@@ -142,7 +142,6 @@ module powerbi.extensibility.visual {
             this.params.visualDataPoints.style('stroke-width', 2);
             if (hasSelection) {
                 // If data is selected, then set background bars to opaque and make selected bars solid.
-
                 this.params.visualDataPoints.style('fill-opacity', function (el: SVGElement): number {
                     return (DataPoint.convert(el).selected) ? settings.solid : settings.opaque; });
                 this.params.visualDataPoints.style('stroke-opacity', function (el: SVGElement): number {

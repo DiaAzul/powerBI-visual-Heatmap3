@@ -230,7 +230,6 @@ module powerbi.extensibility.visual {
 
             // Refresh data from the interface/tables
             this.refreshData(this.viewModel, options);
-            this.updateState();
 
             //
             // Draw the visual
@@ -248,20 +247,6 @@ module powerbi.extensibility.visual {
                 // Bind event handlers to the event targets.
                 this.selectionTools.interactivityService.bind(this.viewModel.dataPoints, this.selectionTools, selectionToolsParams);
             }
-        }
-
-        public updateState(): void {
-            // Check status of highlights and selections to drive the state model
-            const isHighlighted: boolean = this.viewModel.isHighlighted;
-            const isSelected: boolean = this.selectionTools.interactivityService.hasSelection();
-
-            // Need to clear selection & filters when we click on another object which filters the selection.
-            if (this.wasSelected && isHighlighted) {
-                this.selectionTools.clearSelection();
-            }
-
-            this.wasHighlighted = isHighlighted;
-            this.wasSelected = isSelected;
         }
 
         /**
@@ -375,7 +360,6 @@ module powerbi.extensibility.visual {
 
             // Reset list of DataPoints, whilst retaining saved selectoin
             chartViewModel.saveSelection();
-
             chartViewModel.dataPoints = [];
 
             // Initialise the list of fields in the interface - enum must match field names in capabilities.json
@@ -492,6 +476,9 @@ module powerbi.extensibility.visual {
             const backgroundWidth: number = margin.left + margin.right + gridSize * 24;
             const backgroundHeight: number = margin.top + margin.bottom + (bankHoliday ? 8 : 7) * gridSize + (bankHoliday ? 2 : 1) * gridBreak;
             const legendHeight: number = gridSize / 2 + refTextSize.height * 2 + 2 * fillet;
+
+            const isHighlighted: boolean = this.viewModel.isHighlighted;
+            const isSelected: boolean = this.selectionTools.interactivityService.hasSelection();
 
             //
             // CREATE SVG
@@ -626,6 +613,39 @@ module powerbi.extensibility.visual {
 
             const radius: number = gridSize * bevel(tileShape);
 
+            // isHighlighted/ Selected.
+            const fillOpacity: (d: DataPoint) => number = function (d: DataPoint): number {
+                if (isSelected || isHighlighted) {
+                    if (d.selected || d.highlighted) {
+                        return settings.solid;
+                    } else {
+                        return settings.opaque;
+                    }
+                } else {
+                return settings.solid;
+                }
+            };
+
+            const strokeOpacity: (d: DataPoint) => number = function (d: DataPoint): number {
+                if (d.selected || d.highlighted) {
+                    return settings.solid;
+                } else {
+                    return settings.transparent;
+                }
+            };
+
+            const fillValue: (d: DataPoint) => string = function (d: DataPoint): string {
+                if (isHighlighted) {
+                    if (d.selected) {
+                        return colorScale(d.highlightValue);
+                    } else {
+                        return colorScale(d.value);
+                    }
+                } else {
+                    return colorScale(d.value);
+                }
+            };
+
             tiles.enter().append('rect')
                 .attr('class', 'dataPoint')
                 .attr('x', function (d: DataPoint): number { return xOffset(Number(d.hourOfDay), gridSize); })
@@ -635,7 +655,11 @@ module powerbi.extensibility.visual {
                 .attr('ry', radius)
                 .attr('width', gridSize)
                 .attr('height', gridSize)
-                .style('fill', function (d: DataPoint): string { return colorScale(d.value); });
+                .style('stroke', '#000000')
+                .style('stroke-width', 2)
+                .style('stroke-opacity', strokeOpacity)
+                .style('fill', fillValue)
+                .style('fill-opacity', fillOpacity);
 
             //
             // ADD A CHART LEGEND
@@ -651,7 +675,7 @@ module powerbi.extensibility.visual {
                     .attr('transform', 'translate(0,' + (margin.top + yLegend - fillet) + ')')
                     .style('fill', backgroundColor)
                     .style('fill-opacity', backgroundOpacity);
-                }
+            }
 
             const legend: d3.selection.Update<number> = this.chart.selectAll('.legend')
                 .data([0].concat(colorScale.quantiles()), function (d: number): string { return d.toString(); });

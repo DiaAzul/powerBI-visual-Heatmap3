@@ -1,5 +1,5 @@
 {
-    "supportsHighlight": false,
+    "supportsHighlight": true,
     "dataRoles": [
         {
             "displayName": "Day of Week",
